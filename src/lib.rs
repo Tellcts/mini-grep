@@ -1,9 +1,12 @@
+use std::env;
 use std::error::Error;
 use std::fs;
+use std::process;
 
 pub struct Config {
     pub query: String,
     pub filename: String,
+    pub case_sensitive: bool,
 }
 
 impl Config {
@@ -13,20 +16,32 @@ impl Config {
         }
         let query = args[1].clone();
         let filename = args[2].clone();
-        Ok(Config { query, filename })
+        let case_sensitive = !get_bool_from_env("CASE_INSENSITIVE");
+        Ok(Config {
+            query,
+            filename,
+            case_sensitive,
+        })
     }
 }
 
 pub fn run(config: Config) -> Result<(), Box<dyn Error>> {
     let contents = fs::read_to_string(config.filename)?;
-    for line in search(&config.query, &contents) {
+    let lines = match config.case_sensitive {
+        true => search(&config.query, &contents),
+        false => search_case_insensitive(&config.query, &contents),
+    };
+
+    for line in lines {
         println!("{}", line);
     }
+
     Ok(())
 }
 
 pub fn search<'a>(query: &str, contents: &'a str) -> Vec<&'a str> {
     let mut res: Vec<&str> = Vec::new();
+
     for line in contents.lines() {
         if line.contains(query) {
             res.push(line);
@@ -46,6 +61,23 @@ pub fn search_case_insensitive<'a>(query: &str, contents: &'a str) -> Vec<&'a st
     res
 }
 
+fn get_bool_from_env(key: &str) -> bool {
+    env::var(key)
+        .map(|val| match val.to_lowercase().as_str() {
+            "1" | "true" | "yes" => true,
+            "0" | "false" | "no" => false,
+            _ => {
+                eprintln!(
+                    "ERROR: The value of '{}' is invalid!\n\
+                     HELP: maybe value '1 / 0', 'true / false', or 'yes / no' (case-insensitive).",
+                    key
+                );
+                process::exit(1);
+            }
+        })
+        .unwrap_or(false)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -54,10 +86,10 @@ mod tests {
     fn case_sensitive() {
         let query = "duct";
         let contents = "\
-Rust:
-safe, fast, productive.
-Pick three.
-Duct tape.";
+                            Rust:\n\
+                            safe, fast, productive.\n\
+                            Pick three.\n\
+                            Duct tape.";
 
         assert_eq!(vec!["safe, fast, productive."], search(query, contents));
     }
@@ -66,10 +98,10 @@ Duct tape.";
     fn case_insensitive() {
         let query = "rUsT";
         let contents = "\
-Rust:
-safe, fast, productive.
-Pick three.
-Trust me.";
+                            Rust:\n\
+                            safe, fast, productive.\n\
+                            Pick three.\n\
+                            Trust me.";
 
         assert_eq!(
             vec!["Rust:", "Trust me."],
