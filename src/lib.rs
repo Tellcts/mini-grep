@@ -37,9 +37,10 @@ pub fn run(config: Config) -> Result<(), Box<dyn Error>> {
         false => search_case_insensitive(&config.query, &contents),
     };
 
-    for line in lines {
-        println!("{}", line);
-    }
+    // for line in lines {
+    //     println!("{}", line);
+    // }
+    lines.iter().for_each(|line| println!("{}", line));
 
     Ok(())
 }
