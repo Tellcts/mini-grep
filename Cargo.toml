@@ -1,6 +1,18 @@
 [package]
-name = "minigrep"
+name = "tzcan-minigrep"
 version = "0.1.0"
+license = "MIT OR Apache-2.0"
+authors = ["Tzcan <tzcan@foxmail.com>"]
+description = "A simple grep clone"
 edition = "2024"
+
+[lib]
+name = "tzcan"
+path = "src/lib.rs"
+
+[[bin]]
+name = "minigrep"
+path = "src/main.rs"
+crate-type = ["bin"]
 
 [dependencies]
