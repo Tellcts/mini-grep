@@ -13,6 +13,5 @@ path = "src/lib.rs"
 [[bin]]
 name = "minigrep"
 path = "src/main.rs"
-crate-type = ["bin"]
 
 [dependencies]
