@@ -1,3 +1,11 @@
+//! MiniGrep
+//!
+//! A simple program to search for lines that match a query string.
+//! # Examples
+//! ```
+//! $ minigrep query somefile.txt
+//! ```
+
 use std::env;
 use std::error::Error;
 use std::fs;
